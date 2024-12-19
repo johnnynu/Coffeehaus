@@ -1,12 +1,12 @@
 # ☕ Coffeehaus
 
-[![Coffeehaus](https://github.com/johnnynu/Coffeehaus/blob/main/coffeehaus%20logo.png)](https://coffeehaus.app)
+<a href="https://coffeehaus.app">
+  <img src="https://github.com/johnnynu/Coffeehaus/blob/main/coffeehaus%20logo.png" alt="Coffeehaus" width="600">
+</a>
 
 *A social platform for coffee enthusiasts*
 
 [![Visit](https://img.shields.io/badge/-Visit%20Coffeehaus-brown?style=for-the-badge&logo=coffeescript&logoColor=white)](https://coffeehaus.app)
-[![Stars](https://img.shields.io/github/stars/johnnynu/Coffeehaus?style=for-the-badge&color=brown)](https://github.com/johnnynu/Coffeehaus/stargazers)
-[![License](https://img.shields.io/badge/License-MIT-brown?style=for-the-badge)](LICENSE)
 
 ## About
 
