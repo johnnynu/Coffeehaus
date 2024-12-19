@@ -1,8 +1,4 @@
-Coffeehaus
-<p align="center">
-  <img src="https://github.com/johnnynu/Coffeehaus/blob/main/coffeehaus%20logo.png" alt="Coffeehaus" width="200px">
-</p>
-<p align="center">
+## Coffeehaus
   <a href="https://coffeehaus.app">
     <img src="https://github.com/johnnynu/Coffeehaus/blob/main/coffeehaus%20logo.png" alt="Visit Coffeehaus" width="200">
   </a>
