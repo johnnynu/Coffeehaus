@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 const ProfileSetupPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, getAvatarUrl } = useAuth();
+  const avatarUrl = getAvatarUrl();
   const [formData, setFormData] = useState({
     username: "",
     displayName: "",
@@ -20,8 +22,48 @@ const ProfileSetupPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // TODO: Implement API call to save user profile
-      console.log("Profile data:", formData);
+      if (!user) throw new Error("User not found");
+
+      // check if username is available
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("*")
+        .eq("username", formData.username)
+        .single();
+
+      if (existingUser) {
+        throw new Error("Username already taken");
+      }
+
+      // First create the photo entry if we have an avatar URL
+      let photoId = null;
+      if (avatarUrl) {
+        const { data: photo, error: photoError } = await supabase
+          .from("photos")
+          .insert({
+            versions: { original: avatarUrl },
+            position: 0,
+          })
+          .select("id")
+          .single();
+
+        if (photoError) throw photoError;
+        photoId = photo.id;
+      }
+
+      // create user profile
+      const { error: insertError } = await supabase.from("users").insert({
+        id: user.id,
+        email: user.email!,
+        username: formData.username,
+        display_name: formData.displayName,
+        bio: formData.bio || null,
+        profile_photo_id: photoId,
+      });
+
+      if (insertError) {
+        throw insertError;
+      }
 
       // Navigate to feed page after successful submission
       navigate("/feed", { replace: true });
@@ -46,10 +88,10 @@ const ProfileSetupPage: React.FC = () => {
           Complete Your Profile
         </h1>
 
-        {user?.photoURL && (
+        {avatarUrl && (
           <div className="mb-6 flex justify-center">
             <img
-              src={user.photoURL}
+              src={avatarUrl}
               alt="Profile"
               className="w-24 h-24 rounded-full"
             />

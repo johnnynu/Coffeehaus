@@ -1,20 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import {
-  User,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-} from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { User } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  getAvatarUrl: () => string | null;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -26,39 +21,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const getAvatarUrl = () => {
+    if (!user) return null;
+
+    // try to get avatar from user metadata (google profile)
+    const avatarUrl = user.user_metadata?.avatar_url;
+    if (avatarUrl) return avatarUrl;
+
+    // if no avatar url is found, return default avatar
+    return null;
+  };
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
+    // get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // listen for changes to auth state
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
       setLoading(false);
 
-      if (!user) {
-        // Only redirect to landing page if user signs out
-        navigate("/");
+      // handle auth state changes
+      switch (_event) {
+        case "SIGNED_IN":
+          checkNewUser(session?.user ?? null);
+          break;
+        case "SIGNED_OUT":
+          navigate("/");
+          break;
       }
     });
 
-    return unsubscribe;
-  }, [navigate]);
+    return () => {
+      subscription.unsubscribe();
+    };
+  });
+
+  const checkNewUser = async (user: User | null) => {
+    if (!user) return;
+
+    // check if user exists in db
+    const { data: existingUser, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (error || !existingUser) {
+      // new user, redirect to profile setup
+      navigate("/profile-setup");
+    } else {
+      // existing user, redirect to feed
+      navigate("/feed");
+    }
+  };
 
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      // Check if this is a new user by checking if they have a Google provider
-      const isNewUser = !result.user.providerData.some(
-        (data) => data.providerId === "google.com"
-      );
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
 
-      console.log("isNewUser", isNewUser);
-
-      if (result.user) {
-        if (isNewUser) {
-          // If new user, redirect to profile setup
-          navigate("/profile-setup");
-        } else {
-          // If existing user, redirect to feed
-          navigate("/feed");
-        }
+      if (error) {
+        console.error("Error signing in with Google:", error);
+        throw error;
       }
     } catch (error) {
       console.error("Error signing in with Google:", error);
@@ -68,7 +106,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const signOut = async () => {
     try {
-      await firebaseSignOut(auth);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+        throw error;
+      }
       navigate("/");
     } catch (error) {
       console.error("Error signing out:", error);
@@ -81,6 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     loading,
     signInWithGoogle,
     signOut,
+    getAvatarUrl,
   };
 
   return (

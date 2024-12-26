@@ -1,14 +1,70 @@
-import React from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Coffee } from "lucide-react";
 import { mockFeedPosts } from "@/utils/mockData";
 import PostCard from "@/components/landing/PostCard";
+import { supabase } from "@/lib/supabase";
+
+interface UserProfile {
+  username: string;
+  display_name: string;
+  profile_photo_id: string | null;
+  photo_url?: string | null;
+}
+
+interface PhotoData {
+  versions: {
+    original: string;
+  };
+}
+
+interface UserData extends Omit<UserProfile, "photo_url"> {
+  photos: PhotoData;
+}
 
 const FeedPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user?.id) return;
+
+      // Fetch user profile with photo URL
+      const { data: userData, error: userError } = (await supabase
+        .from("users")
+        .select(
+          `
+          username,
+          display_name,
+          profile_photo_id,
+          photos!profile_photo_id (
+            versions
+          )
+        `
+        )
+        .eq("id", user.id)
+        .single()) as { data: UserData | null; error: any };
+
+      if (userError) {
+        console.error("Error fetching user profile:", userError);
+        return;
+      }
+
+      if (userData) {
+        setProfile({
+          ...userData,
+          photo_url: userData.photos?.versions?.original || null,
+        });
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id]);
 
   const handleSignOut = async () => {
     try {
@@ -28,9 +84,9 @@ const FeedPage: React.FC = () => {
             <h1 className="text-xl font-bold text-amber-800">Coffeehaus</h1>
           </div>
           <div className="flex items-center gap-4">
-            {user?.photoURL && (
+            {profile?.photo_url && (
               <img
-                src={user.photoURL}
+                src={profile.photo_url}
                 alt="Profile"
                 className="w-8 h-8 rounded-full"
               />
@@ -51,16 +107,16 @@ const FeedPage: React.FC = () => {
           <div className="md:col-span-4 md:sticky md:top-20 h-fit">
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center gap-4 mb-4">
-                {user?.photoURL && (
+                {profile?.photo_url && (
                   <img
-                    src={user.photoURL}
+                    src={profile.photo_url}
                     alt="Profile"
                     className="w-16 h-16 rounded-full"
                   />
                 )}
                 <div>
-                  <h2 className="font-semibold">{user?.displayName}</h2>
-                  <p className="text-gray-600 text-sm">{user?.email}</p>
+                  <h2 className="font-semibold">{profile?.display_name}</h2>
+                  <p className="text-gray-600 text-sm">@{profile?.username}</p>
                 </div>
               </div>
               <p className="text-sm text-gray-600 mb-4">
