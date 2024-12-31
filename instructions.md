@@ -17,7 +17,7 @@ Google Cloud Platform for infrastructure
 
 ## Priority 1: Core Authentication & Basic Data
 ### User Features
-1. User Authentication (sign up with google, sign in with google, sign out) via Firebase Auth
+1. User Authentication (sign up with google, sign in with google, sign out) via Supabase Auth
     - When signing up/in with google, the user will be met with a google sign in popup to authorize the user
     - If the user is a first time user, they will be asked to enter a unique username, enter a display name, and enter an optional bio for themselves (we will use the profile photo from google as the avatar)
     - If the user is successful, the user should be able to login and see their feed
@@ -281,6 +281,19 @@ Coffeehaus
 │   │   ├── assets
 │   │   │   └── react.svg
 │   │   ├── components
+│   │   │   ├── landing
+│   │   │   │   ├── BottomCTA.tsx
+│   │   │   │   ├── PostCard.tsx
+│   │   │   │   └── WelcomeBanner.tsx
+│   │   │   ├── layout
+│   │   │   └── ui
+│   │   │       ├── alert.tsx
+│   │   │       ├── button.tsx
+│   │   │       ├── card.tsx
+│   │   │       ├── input.tsx
+│   │   │       └── textarea.tsx
+│   │   ├── contexts
+│   │   │   └── AuthContext.tsx
 │   │   ├── hooks
 │   │   ├── index.css
 │   │   ├── lib
@@ -288,11 +301,15 @@ Coffeehaus
 │   │   │   └── utils.ts
 │   │   ├── main.tsx
 │   │   ├── pages
+│   │   │   ├── FeedPage.tsx
+│   │   │   ├── LandingPage.tsx
+│   │   │   └── ProfileSetupPage.tsx
 │   │   ├── store
 │   │   │   └── index.ts
 │   │   ├── types
 │   │   │   └── index.ts
 │   │   ├── utils
+│   │   │   └── mockData.ts
 │   │   └── vite-env.d.ts
 │   ├── tailwind.config.js
 │   ├── tsconfig.app.json
@@ -300,11 +317,19 @@ Coffeehaus
 │   ├── tsconfig.node.json
 │   └── vite.config.ts
 ├── coffeehaus logo.png
+├── coffeehaus.txt
 ├── instructions.md
 └── server
     ├── cmd
     │   └── api
+    │       └── main.go
+    ├── go.mod
+    ├── go.sum
     └── internal
+        ├── config
+        │   └── database.go
+        ├── database
+        │   └── client.go
         ├── handlers
         ├── middleware
         ├── models

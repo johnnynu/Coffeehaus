@@ -7,6 +7,8 @@ import (
 
 	"github.com/johnnynu/Coffeehaus/internal/config"
 	"github.com/johnnynu/Coffeehaus/internal/database"
+	handlers "github.com/johnnynu/Coffeehaus/internal/handlers"
+	jwtauth "github.com/johnnynu/Coffeehaus/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -33,6 +35,15 @@ func main() {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
+	// initialize auth middleware
+	authMiddleware := jwtauth.NewAuthMiddleware(dbConfig.SupabaseURL, dbConfig.SupabaseKey)
+
+	if err != nil {
+		log.Fatalf("Failed to initialize auth middleware: %v", err)
+	}
+
+	authHandler := handlers.NewAuthHandler(db)
+
 	r := chi.NewRouter()
 
 	// Middleware
@@ -49,6 +60,16 @@ func main() {
 	// Routes
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World"))
+	})
+
+	// protected routes
+	r.Group(func(r chi.Router) {
+		r.Use(authMiddleware.Authenticate)
+
+		// User routes
+		r.Route("/user", func(r chi.Router) {
+			r.Get("/", authHandler.GetUser)
+		})
 	})
 
 	log.Printf("Server starting on port %s", port)

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Coffee } from "lucide-react";
 import { mockFeedPosts } from "@/utils/mockData";
 import PostCard from "@/components/landing/PostCard";
-import { supabase } from "@/lib/supabase";
 
 interface UserProfile {
   username: string;
@@ -27,44 +25,39 @@ interface UserData extends Omit<UserProfile, "photo_url"> {
 
 const FeedPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, session, signOut } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (!user?.id) return;
+      if (!user?.id || !session?.access_token) return;
 
-      // Fetch user profile with photo URL
-      const { data: userData, error: userError } = (await supabase
-        .from("users")
-        .select(
-          `
-          username,
-          display_name,
-          profile_photo_id,
-          photos!profile_photo_id (
-            versions
-          )
-        `
-        )
-        .eq("id", user.id)
-        .single()) as { data: UserData | null; error: any };
+      try {
+        const response = await fetch("http://localhost:8080/user", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
-      if (userError) {
-        console.error("Error fetching user profile:", userError);
-        return;
-      }
+        if (!response.ok) {
+          console.error("Response status:", response.status);
+          throw new Error("Failed to fetch user profile");
+        }
 
-      if (userData) {
+        const userData = (await response.json()) as UserData;
         setProfile({
           ...userData,
           photo_url: userData.photos?.versions?.original || null,
         });
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
       }
     };
 
     fetchUserProfile();
-  }, [user?.id]);
+  }, [user?.id, session?.access_token]);
 
   const handleSignOut = async () => {
     try {
@@ -89,6 +82,12 @@ const FeedPage: React.FC = () => {
                 src={profile.photo_url}
                 alt="Profile"
                 className="w-8 h-8 rounded-full"
+                crossOrigin="anonymous"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  console.error("Error loading profile image:", e);
+                  console.log("Attempted image URL:", profile.photo_url);
+                }}
               />
             )}
             <Button
@@ -112,6 +111,12 @@ const FeedPage: React.FC = () => {
                     src={profile.photo_url}
                     alt="Profile"
                     className="w-16 h-16 rounded-full"
+                    crossOrigin="anonymous"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      console.error("Error loading profile image:", e);
+                      console.log("Attempted image URL:", profile.photo_url);
+                    }}
                   />
                 )}
                 <div>

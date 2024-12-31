@@ -16,10 +16,10 @@ type Client struct {
 }
 
 func NewClient(cfg *config.DatabaseConfig) (*Client, error) {
-	// Create headers with Supabase key
+	// Create headers with Supabase service role key
 	headers := map[string]string{
-		"apikey":        cfg.SupabaseKey,
-		"Authorization": "Bearer " + cfg.SupabaseKey,
+		"apikey":        cfg.ServiceRoleKey,
+		"Authorization": "Bearer " + cfg.ServiceRoleKey,
 		"Content-Type": "application/json",
 		"Accept":       "application/json",
 		"Prefer":       "return=representation",
@@ -65,25 +65,4 @@ func (c *Client) TestConnection() error {
 
 	log.Printf("Successfully connected to Supabase")
 	return nil
-}
-
-func (c *Client) GetUserByID(id string) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
-	
-	resp, statusCode, queryResp := c.From("users").
-		Select("*", "", false).
-		Single().
-		Eq("id", id).
-		Execute()
-	
-	if statusCode != 200 {
-		return nil, fmt.Errorf("failed to get user by id: %s", queryResp)
-	}
-
-	err := json.Unmarshal(resp, &result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal user: %s", err)
-	}
-
-	return result, nil
 }

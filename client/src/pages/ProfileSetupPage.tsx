@@ -94,6 +94,8 @@ const ProfileSetupPage: React.FC = () => {
               src={avatarUrl}
               alt="Profile"
               className="w-24 h-24 rounded-full"
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
             />
           </div>
         )}
