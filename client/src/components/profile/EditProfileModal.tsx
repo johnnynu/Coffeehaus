@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
-import { Check, X } from "lucide-react";
+import { Check, Coffee, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -113,9 +113,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-[#F9F6F4] border-[#D4B08C]">
         <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogTitle className="text-[#4A3726] flex items-center gap-2">
+            <Coffee className="w-5 h-5" />
+            Edit Your Coffee Profile
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -123,7 +126,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <div>
               <label
                 htmlFor="username"
-                className="text-sm font-medium mb-1 block"
+                className="text-sm font-medium mb-1 block text-[#634832]"
               >
                 Username *
               </label>
@@ -139,20 +142,20 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   }
                   required
                   disabled={isSubmitting}
-                  className={
+                  className={`bg-white border-[#D4B08C] focus-visible:ring-[#967259] text-[#4A3726] ${
                     usernameStatus === "available"
                       ? "pr-10 border-green-500 focus-visible:ring-green-500"
                       : usernameStatus === "taken"
                       ? "pr-10 border-red-500 focus-visible:ring-red-500"
                       : "pr-10"
-                  }
+                  }`}
                   placeholder="Enter a unique username"
                   pattern="^[a-z0-9_]+$"
                   title="Username can only contain lowercase letters, numbers, and underscores"
                 />
                 {usernameStatus === "checking" && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="animate-spin h-4 w-4 border-2 border-amber-800 rounded-full border-t-transparent" />
+                    <div className="animate-spin h-4 w-4 border-2 border-[#967259] rounded-full border-t-transparent" />
                   </div>
                 )}
                 {usernameStatus === "available" &&
@@ -168,7 +171,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   This username is already taken
                 </p>
               )}
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-[#967259] mt-1">
                 Username can only contain lowercase letters, numbers, and
                 underscores
               </p>
@@ -177,7 +180,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <div>
               <label
                 htmlFor="displayName"
-                className="text-sm font-medium mb-1 block"
+                className="text-sm font-medium mb-1 block text-[#634832]"
               >
                 Display Name *
               </label>
@@ -193,11 +196,15 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 required
                 disabled={isSubmitting}
                 placeholder="Your display name"
+                className="bg-white border-[#D4B08C] focus-visible:ring-[#967259] text-[#4A3726]"
               />
             </div>
 
             <div>
-              <label htmlFor="bio" className="text-sm font-medium mb-1 block">
+              <label
+                htmlFor="bio"
+                className="text-sm font-medium mb-1 block text-[#634832]"
+              >
                 Bio
               </label>
               <Textarea
@@ -206,9 +213,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, bio: e.target.value }))
                 }
-                className="h-24"
+                className="h-24 bg-white border-[#D4B08C] focus-visible:ring-[#967259] text-[#4A3726]"
                 disabled={isSubmitting}
-                placeholder="Tell us about yourself..."
+                placeholder="Tell us about your coffee journey..."
               />
             </div>
 
@@ -225,19 +232,20 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
+              className="border-[#4A3726] text-[#4A3726] hover:bg-[#E8D7C9]"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-amber-800 text-white hover:bg-amber-700"
+              className="bg-[#4A3726] text-white hover:bg-[#634832]"
               disabled={
                 isSubmitting ||
                 usernameStatus === "taken" ||
                 usernameStatus === "checking"
               }
             >
-              {isSubmitting ? "Saving..." : "Save Changes"}
+              {isSubmitting ? "Brewing Changes..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>

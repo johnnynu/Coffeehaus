@@ -9,7 +9,7 @@ export const mockFeedPosts: Post[] = [
     imageUrl: "/api/placeholder/400/400",
     likes: 234,
     comments: 45,
-    rating: 4.5,
+    rating: 4,
     caption:
       "Perfect morning brew ☕️ The latte art here never disappoints! #coffeeart #morningcoffee",
     drinkName: "Oat Milk Latte",

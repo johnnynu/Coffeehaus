@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { Coffee, FileText, User } from "lucide-react";
 
 const ProfileSetupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -82,10 +83,13 @@ const ProfileSetupPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-amber-800 mb-6">
-          Complete Your Profile
+    <div className="min-h-screen bg-[#F9F6F4] flex items-center justify-center">
+      <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md border border-[#D4B08C]">
+        <div className="flex items-center justify-center mb-6">
+          <Coffee className="w-10 h-10 text-[#4A3726]" />
+        </div>
+        <h1 className="text-3xl font-bold text-[#4A3726] mb-6 text-center">
+          Brew Your Profile
         </h1>
 
         {avatarUrl && (
@@ -93,68 +97,84 @@ const ProfileSetupPage: React.FC = () => {
             <img
               src={avatarUrl}
               alt="Profile"
-              className="w-24 h-24 rounded-full"
+              className="w-24 h-24 rounded-full border-4 border-[#D4B08C]"
               crossOrigin="anonymous"
               referrerPolicy="no-referrer"
             />
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
               htmlFor="username"
-              className="block text-sm font-medium mb-1"
+              className="block text-sm font-medium mb-1 text-[#634832]"
             >
               Username *
             </label>
-            <Input
-              id="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              required
-              placeholder="Choose a unique username"
-              disabled={isSubmitting}
-            />
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#967259]" />
+              <Input
+                id="username"
+                value={formData.username}
+                onChange={handleInputChange}
+                required
+                placeholder="Choose a unique username"
+                disabled={isSubmitting}
+                className="pl-10 border-[#D4B08C] focus:ring-[#967259] text-[#4A3726]"
+              />
+            </div>
           </div>
 
           <div>
             <label
               htmlFor="displayName"
-              className="block text-sm font-medium mb-1"
+              className="block text-sm font-medium mb-1 text-[#634832]"
             >
               Display Name *
             </label>
-            <Input
-              id="displayName"
-              value={formData.displayName}
-              onChange={handleInputChange}
-              required
-              placeholder="Your display name"
-              disabled={isSubmitting}
-            />
+            <div className="relative">
+              <Coffee className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#967259]" />
+              <Input
+                id="displayName"
+                value={formData.displayName}
+                onChange={handleInputChange}
+                required
+                placeholder="Your coffee connoisseur name"
+                disabled={isSubmitting}
+                className="pl-10 border-[#D4B08C] focus:ring-[#967259] text-[#4A3726]"
+              />
+            </div>
           </div>
 
           <div>
-            <label htmlFor="bio" className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="bio"
+              className="block text-sm font-medium mb-1 text-[#634832]"
+            >
               Bio (Optional)
             </label>
-            <Textarea
-              id="bio"
-              value={formData.bio}
-              onChange={handleInputChange}
-              placeholder="Tell us about yourself..."
-              className="h-24"
-              disabled={isSubmitting}
-            />
+            <div className="relative">
+              <FileText className="absolute left-3 top-3 text-[#967259]" />
+              <Textarea
+                id="bio"
+                value={formData.bio}
+                onChange={handleInputChange}
+                placeholder="Share your coffee journey..."
+                className="pl-10 h-24 border-[#D4B08C] focus:ring-[#967259] text-[#4A3726]"
+                disabled={isSubmitting}
+              />
+            </div>
           </div>
 
           <Button
             type="submit"
-            className="w-full bg-amber-800 text-white hover:bg-amber-700"
+            className="w-full bg-[#4A3726] text-white hover:bg-[#634832] transition-colors duration-300"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Setting up..." : "Complete Setup"}
+            {isSubmitting
+              ? "Brewing Your Profile..."
+              : "Start Your Coffee Journey"}
           </Button>
         </form>
       </div>

@@ -2,7 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { Grid3X3 } from "lucide-react";
+import {
+  Coffee,
+  Grid3X3,
+  Users,
+  MapPin,
+  Heart,
+  MessageCircle,
+} from "lucide-react";
 import { mockFeedPosts } from "@/utils/mockData";
 import EditProfileModal from "@/components/profile/EditProfileModal";
 import useUserProfileStore from "@/store/userProfileStore";
@@ -65,89 +72,127 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F9F6F4]">
       <Navbar isAuthenticated={true} />
-      <main className="max-w-4xl mx-auto px-4 py-8 pt-14">
+      <main className="max-w-4xl mx-auto px-4 py-8 pt-20">
         {/* Profile Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-8">
-          {/* Profile Photo */}
-          <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-            {profile.photo_url ? (
-              <img
-                src={profile.photo_url}
-                alt={profile.display_name}
-                className="w-full h-full object-cover"
-                crossOrigin="anonymous"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-4xl text-gray-400">
-                {profile.display_name && profile.display_name.length > 0
-                  ? profile.display_name[0].toUpperCase()
-                  : "?"}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-8">
+            {/* Profile Photo */}
+            <div className="w-32 h-32 rounded-full overflow-hidden bg-[#E8D7C9] flex-shrink-0 border-4 border-[#D4B08C]">
+              {profile.photo_url ? (
+                <img
+                  src={profile.photo_url}
+                  alt={profile.display_name}
+                  className="w-full h-full object-cover"
+                  crossOrigin="anonymous"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-4xl text-[#4A3726] font-serif">
+                  {profile.display_name && profile.display_name.length > 0
+                    ? profile.display_name[0].toUpperCase()
+                    : "?"}
+                </div>
+              )}
+            </div>
+
+            {/* Profile Info */}
+            <div className="flex-grow">
+              <div className="flex items-center gap-4 mb-4">
+                <h1 className="text-2xl font-semibold text-[#4A3726]">
+                  {profile.username}
+                </h1>
+                {isOwnProfile && (
+                  <Button
+                    variant="outline"
+                    className="border-[#4A3726] text-[#4A3726] hover:bg-[#4A3726] hover:text-[#F9F6F4]"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    Edit Profile
+                  </Button>
+                )}
               </div>
-            )}
+
+              <div className="flex gap-8 mb-4">
+                <div className="text-sm text-[#634832]">
+                  <span className="font-semibold">0</span> posts
+                </div>
+                <div className="text-sm text-[#634832]">
+                  <span className="font-semibold">0</span> followers
+                </div>
+                <div className="text-sm text-[#634832]">
+                  <span className="font-semibold">0</span> following
+                </div>
+              </div>
+
+              <div>
+                <h2 className="font-semibold mb-1 text-[#4A3726]">
+                  {profile.display_name || profile.username}
+                </h2>
+                {profile.bio && (
+                  <p className="text-sm whitespace-pre-wrap text-[#634832]">
+                    {profile.bio}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Profile Info */}
-          <div className="flex-grow">
-            <div className="flex items-center gap-4 mb-4">
-              <h1 className="text-xl font-semibold">{profile.username}</h1>
-              {isOwnProfile && (
-                <Button
-                  variant="outline"
-                  className="border-gray-300"
-                  onClick={() => setIsEditing(true)}
-                >
-                  Edit Profile
-                </Button>
-              )}
-            </div>
-
-            <div className="flex gap-8 mb-4">
-              <div className="text-sm">
-                <span className="font-semibold">0</span> posts
+          {/* Coffee Journey */}
+          <div className="border-t border-[#E5E7EB] pt-4">
+            <h3 className="text-lg font-semibold text-[#4A3726] mb-3">
+              Coffee Journey
+            </h3>
+            <div className="flex justify-between">
+              <div className="flex items-center gap-2 text-[#634832]">
+                <Coffee className="w-5 h-5 text-[#967259]" />
+                <span>12 coffee shops visited</span>
               </div>
-              <div className="text-sm">
-                <span className="font-semibold">0</span> followers
+              <div className="flex items-center gap-2 text-[#634832]">
+                <MapPin className="w-5 h-5 text-[#967259]" />
+                <span>5 cities explored</span>
               </div>
-              <div className="text-sm">
-                <span className="font-semibold">0</span> following
+              <div className="flex items-center gap-2 text-[#634832]">
+                <Users className="w-5 h-5 text-[#967259]" />
+                <span>89 fellow coffee lovers</span>
               </div>
-            </div>
-
-            <div>
-              <h2 className="font-semibold mb-1">
-                {profile.display_name || profile.username}
-              </h2>
-              {profile.bio && (
-                <p className="text-sm whitespace-pre-wrap">{profile.bio}</p>
-              )}
             </div>
           </div>
         </div>
 
         {/* Posts Grid */}
-        <div className="border-t pt-4">
-          <div className="flex items-center justify-center gap-16 mb-4 text-sm font-medium">
-            <button className="flex items-center gap-2 text-amber-800 border-t-2 border-amber-800 pt-4 -mt-4">
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-center gap-16 mb-6 text-sm font-medium">
+            <button className="flex items-center gap-2 text-[#4A3726] border-b-2 border-[#4A3726] pb-2">
               <Grid3X3 className="w-4 h-4" />
               POSTS
             </button>
           </div>
 
-          <div className="grid grid-cols-3 gap-1 md:gap-6">
+          <div className="grid grid-cols-3 gap-4">
             {mockFeedPosts.map((post) => (
               <div
                 key={post.id}
-                className="aspect-square bg-gray-200 relative group cursor-pointer"
+                className="aspect-square bg-[#E8D7C9] relative group cursor-pointer rounded-lg overflow-hidden"
               >
                 <img
                   src={post.imageUrl}
                   alt={post.caption}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200" />
+                <div className="absolute inset-0 bg-[#4A3726] bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                  <div className="text-[#F9F6F4] opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      <Heart className="w-6 h-6" />
+                      <span>{post.likes}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="w-6 h-6" />
+                      <span>{post.comments}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
