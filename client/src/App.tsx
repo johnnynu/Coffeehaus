@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import LandingPage from "@/pages/LandingPage";
 import ProfileSetupPage from "@/pages/ProfileSetupPage";
 import FeedPage from "@/pages/FeedPage";
+import ProfilePage from "@/pages/ProfilePage";
 
 // Protected route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
@@ -41,6 +42,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <FeedPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/:username"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />

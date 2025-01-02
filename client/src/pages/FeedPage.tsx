@@ -1,105 +1,23 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { Coffee } from "lucide-react";
+import React, { useEffect } from "react";
 import { mockFeedPosts } from "@/utils/mockData";
 import PostCard from "@/components/landing/PostCard";
-
-interface UserProfile {
-  username: string;
-  display_name: string;
-  profile_photo_id: string | null;
-  photo_url?: string | null;
-}
-
-interface PhotoData {
-  versions: {
-    original: string;
-  };
-}
-
-interface UserData extends Omit<UserProfile, "photo_url"> {
-  photos: PhotoData;
-}
+import useUserProfileStore from "@/store/userProfileStore";
+import { useAuth } from "@/contexts/AuthContext";
+import Navbar from "@/components/layout/Navbar";
 
 const FeedPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { user, session, signOut } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { session } = useAuth();
+  const { profile, fetchProfile } = useUserProfileStore();
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!user?.id || !session?.access_token) return;
-
-      try {
-        const response = await fetch("http://localhost:8080/user", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          console.error("Response status:", response.status);
-          throw new Error("Failed to fetch user profile");
-        }
-
-        const userData = (await response.json()) as UserData;
-        setProfile({
-          ...userData,
-          photo_url: userData.photos?.versions?.original || null,
-        });
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      }
-    };
-
-    fetchUserProfile();
-  }, [user?.id, session?.access_token]);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate("/");
-    } catch (error) {
-      console.error("Error signing out:", error);
+    if (session?.access_token) {
+      fetchProfile(session.access_token);
     }
-  };
+  }, [session?.access_token, fetchProfile]);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="fixed top-0 w-full bg-white border-b z-50">
-        <div className="max-w-5xl mx-auto px-4 py-2 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Coffee className="h-6 w-6 text-amber-800" />
-            <h1 className="text-xl font-bold text-amber-800">Coffeehaus</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            {profile?.photo_url && (
-              <img
-                src={profile.photo_url}
-                alt="Profile"
-                className="w-8 h-8 rounded-full"
-                crossOrigin="anonymous"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  console.error("Error loading profile image:", e);
-                  console.log("Attempted image URL:", profile.photo_url);
-                }}
-              />
-            )}
-            <Button
-              variant="outline"
-              className="border-amber-800 text-amber-800 hover:bg-amber-50"
-              onClick={handleSignOut}
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navbar isAuthenticated={true} />
 
       <main className="pt-14">
         <div className="max-w-5xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-12 gap-8">

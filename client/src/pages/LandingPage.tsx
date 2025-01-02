@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from "react";
-import { Coffee } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
 import { mockFeedPosts } from "@/utils/mockData";
 import PostCard from "@/components/landing/PostCard";
 import WelcomeBanner from "@/components/landing/WelcomeBanner";
 import BottomCTA from "@/components/landing/BottomCTA";
+import Navbar from "@/components/layout/Navbar";
 
 const LandingPage: React.FC = () => {
   const { signInWithGoogle } = useAuth();
@@ -32,22 +31,7 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Fixed Navigation */}
-      <nav className="fixed top-0 w-full bg-white border-b z-50">
-        <div className="max-w-5xl mx-auto px-4 py-2 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Coffee className="h-6 w-6 text-amber-800" />
-            <h1 className="text-xl font-bold text-amber-800">Coffeehaus</h1>
-          </div>
-          <Button
-            variant="outline"
-            className="border-amber-800 text-amber-800 hover:bg-amber-50"
-            onClick={handleSignIn}
-          >
-            Sign In with Google
-          </Button>
-        </div>
-      </nav>
+      <Navbar isAuthenticated={false} onSignIn={handleSignIn} />
 
       {/* Auth Prompt Alert */}
       {showAuthPrompt && (

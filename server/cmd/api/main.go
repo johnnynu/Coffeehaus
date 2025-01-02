@@ -42,7 +42,9 @@ func main() {
 		log.Fatalf("Failed to initialize auth middleware: %v", err)
 	}
 
+	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(db)
+	userHandler := handlers.NewUserHandler(db)
 
 	r := chi.NewRouter()
 
@@ -69,6 +71,7 @@ func main() {
 		// User routes
 		r.Route("/user", func(r chi.Router) {
 			r.Get("/", authHandler.GetUser)
+			r.Put("/{username}", userHandler.UpdateProfile)
 		})
 	})
 

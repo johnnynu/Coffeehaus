@@ -15,7 +15,6 @@ Google Cloud Platform for infrastructure
 
 # Core Functionalities
 
-## Priority 1: Core Authentication & Basic Data
 ### User Features
 1. User Authentication (sign up with google, sign in with google, sign out) via Supabase Auth
     - When signing up/in with google, the user will be met with a google sign in popup to authorize the user
@@ -35,7 +34,6 @@ Google Cloud Platform for infrastructure
     - Users can discover coffee shops through a map interface, list view, or by searching with options to filter by distance, rating, or price level
     - Each coffee shop will have its own unique profile page displaying both Yelp data and Coffeehaus-specific content
 
-## Priority 2: Basic Content & Viewing Features
 ### Social Features
 1. Instagram-style photo posts with:
     - Single photo support initially (stored in Google Cloud Storage)
@@ -55,7 +53,6 @@ Google Cloud Platform for infrastructure
         * Interactive map showing the shop's location
         * List of recent posts tagged at this location
 
-## Priority 3: Social Engagement & Enhanced Discovery
 ### Social Features
 1. Likes and comments
     - All auth users should be able to like and comment on a post. A user can only like a post once and a user can comment on a post as many times as they want. Users can also unlike a post
@@ -105,6 +102,188 @@ Google Cloud Platform for infrastructure
         * Photo gallery combining Yelp photos and user-submitted content
         * Quick statistics (total posts, average rating, popular drinks)
         * Option to save/bookmark the shop for later visits
+
+
+# Coffeehaus Implementation Roadmap
+
+## Foundation Phase (Weeks 1-2)
+The foundation phase establishes the core infrastructure and authentication system that all other features will build upon.
+
+### 1. Database & Infrastructure Setup
+First, we'll set up our data layer and core infrastructure:
+
+- Initialize Supabase project and configure settings
+- Set up PostgreSQL database with initial schema
+- Configure development environment
+- Set up deployment pipeline
+- Initialize base project structure
+
+### 2. Authentication System
+The authentication system serves as the gateway to our application:
+
+- Implement Supabase Auth integration with Google OAuth
+- Create AuthContext for state management
+- Build protected route system
+- Develop sign-in/sign-up flows
+- Implement session handling
+- Add authentication error handling and alerts
+
+### 3. User Profile Management
+With authentication in place, we create the basic user profile system:
+
+- Implement new user onboarding flow
+- Create username management (with uniqueness validation)
+- Add display name and bio fields
+- Integrate Google profile photo system
+- Build basic profile page layout
+- Create profile edit functionality
+
+## Core Features Phase (Weeks 3-4)
+This phase implements the essential features that make the application usable.
+
+### 1. Coffee Shop Integration
+The coffee shop system forms the foundation of our content:
+
+- Set up Yelp API integration
+- Create shop data synchronization system
+- Implement basic shop storage
+- Build initial shop profile pages
+- Add basic shop search functionality
+
+### 2. Basic Post System
+The post system enables users to share their experiences:
+
+- Set up Google Cloud Storage for images
+- Implement single photo upload
+- Create post creation form
+- Add basic caption support
+- Implement shop tagging
+- Add star rating system (1-5)
+- Create basic post display component
+
+### 3. Feed Implementation
+The feed brings content to users:
+
+- Create basic feed layout
+- Implement post loading and pagination
+- Add basic sorting options
+- Create post preview grid
+- Implement post detail view
+
+## Enhancement Phase (Weeks 5-6)
+This phase adds social features and improves the discovery experience.
+
+### 1. Social Features
+Social features make the platform interactive:
+
+- Implement like system
+- Add commenting functionality
+- Create user following system
+- Build notification system for interactions
+- Add post saving capability
+
+### 2. Location Features
+Location features enable local discovery:
+
+- Integrate Google Maps
+- Implement shop distance calculations
+- Add location-based shop filtering
+- Create map view for shop discovery
+- Implement location permission handling
+
+### 3. Rating System
+The rating system helps users make informed decisions:
+
+- Implement dual rating display (Yelp + Coffeehaus)
+- Create rating aggregation system
+- Build rating breakdown views
+- Add rating filtering options
+- Implement rating trends
+
+## Advanced Features Phase (Weeks 7-8)
+This phase adds sophistication and polishes the user experience.
+
+### 1. Enhanced Post Features
+Advanced posting capabilities:
+
+- Add multiple photo support
+- Implement photo carousel
+- Create hashtag system
+- Add advanced caption features
+- Implement post editing
+
+### 2. Advanced Discovery
+Improved discovery features:
+
+- Add advanced search with filters
+- Implement autocomplete
+- Create operating hours filtering
+- Add price level filtering
+- Build advanced sorting options
+
+### 3. Feed Personalization
+Make the feed more relevant to users:
+
+- Implement follow-based feed filtering
+- Add activity feed
+- Create trending posts section
+- Implement content recommendations
+- Add feed preferences
+
+## Testing & Optimization Phase (Weeks 9-10)
+Final phase focused on quality and performance.
+
+### 1. Performance Optimization
+Ensure the application runs smoothly:
+
+- Implement image optimization
+- Add lazy loading
+- Optimize database queries
+- Implement caching
+- Add performance monitoring
+
+### 2. Testing & Quality Assurance
+Ensure reliability and user satisfaction:
+
+- Implement end-to-end testing
+- Add unit tests
+- Perform security audits
+- Conduct user testing
+- Fix bugs and issues
+
+### 3. Launch Preparation
+Prepare for production deployment:
+
+- Finalize deployment configuration
+- Set up monitoring and logging
+- Create backup systems
+- Document API endpoints
+- Prepare launch checklist
+
+## Implementation Guidelines
+
+### Development Principles
+- Follow mobile-first design approach
+- Implement progressive enhancement
+- Use TypeScript for type safety
+- Follow REST API best practices
+- Maintain consistent code style
+
+### Testing Strategy
+- Write tests alongside feature development
+- Implement both unit and integration tests
+- Conduct regular security audits
+- Perform performance testing
+- Document test cases and scenarios
+
+### Documentation Requirements
+- Maintain up-to-date API documentation
+- Document component usage
+- Create deployment guides
+- Write troubleshooting guides
+- Document database schema changes
+
+This roadmap is designed to be iterative and flexible. Each phase builds upon the previous ones, ensuring we maintain a working application throughout development while gradually adding more sophisticated features. Regular testing and user feedback should inform adjustments to this timeline and feature prioritization.
 
 # Doc
 

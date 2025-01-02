@@ -80,8 +80,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // new user, redirect to profile setup
       navigate("/profile-setup");
     } else {
-      // existing user, redirect to feed
-      navigate("/feed");
+      // Only redirect to feed if we're on the landing page
+      const currentPath = window.location.pathname;
+      if (currentPath === "/" || currentPath === "/auth/callback") {
+        navigate("/feed");
+      }
     }
   };
 
