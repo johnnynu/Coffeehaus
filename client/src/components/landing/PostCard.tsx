@@ -102,13 +102,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, onInteraction }) => {
               <span className="font-semibold">{post.username}</span>{" "}
               {post.caption}
             </p>
-            <p className="text-xs text-[#6B7280] mt-1">
-              View all {post.comments} comments
-            </p>
-            <div className="flex items-center gap-2 mt-2 text-xs text-[#6B7280]">
+            <div className="flex items-center gap-2 mt-1 text-xs text-[#6B7280]">
               {renderRating(post.rating)}
               <span className="font-medium">{post.drinkName}</span>
             </div>
+            <p className="text-xs text-[#6B7280] mt-1">
+              View all {post.comments} comments
+            </p>
           </div>
         </div>
       </CardContent>

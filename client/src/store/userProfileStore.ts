@@ -27,6 +27,7 @@ const useUserProfileStore = create<UserProfileState>((set) => ({
   error: null,
 
   fetchProfile: async (token: string) => {
+    console.log("Fetching profile...", new Date().toISOString());
     set({ isLoading: true, error: null });
     try {
       const response = await fetch("http://localhost:8080/user", {

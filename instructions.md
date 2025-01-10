@@ -8,7 +8,7 @@ Authentication: Firebase Auth
 Database: Supabase (PostgreSQL)
 External Services:
 
-Yelp API for coffee shop data
+Google Places API for coffee shop data
 Google Maps for location features
 Cloudinary for image processing
 Google Cloud Platform for infrastructure
@@ -29,10 +29,10 @@ Google Cloud Platform for infrastructure
     - a username is unique to each user
 
 ### Coffee Shop Features
-1. Integration with Yelp API for shop data
-    - Shop data will be initially populated through Yelp API integration, providing verified business information including name, address, hours, and basic ratings
+1. Integration with Google Places API for shop data
+    - Shop data will be initially populated through Google Places API integration, providing verified business information including name, address, hours, and basic ratings
     - Users can discover coffee shops through a map interface, list view, or by searching with options to filter by distance, rating, or price level
-    - Each coffee shop will have its own unique profile page displaying both Yelp data and Coffeehaus-specific content
+    - Each coffee shop will have its own unique profile page displaying both Google Places data and Coffeehaus-specific content
 
 ### Social Features
 1. Instagram-style photo posts with:
@@ -49,7 +49,7 @@ Google Cloud Platform for infrastructure
 
 2. Shop profiles with basic information
     - Each shop has a dedicated profile page featuring:
-        * Basic information (hours, address, price level) from Yelp
+        * Basic information (hours, address, price level) from Google Places
         * Interactive map showing the shop's location
         * List of recent posts tagged at this location
 
@@ -67,10 +67,10 @@ Google Cloud Platform for infrastructure
     - Users can filter shops within a specific radius of their current location
     - The app will request location permissions to provide personalized nearby recommendations
 
-2. Dual Rating System (Yelp + Coffeehaus average user ratings)
-    - Coffee shops will display both their Yelp rating and a Coffeehaus-specific rating
+2. Dual Rating System (Google Places + Coffeehaus average user ratings)
+    - Coffee shops will display both their Google Places rating and a Coffeehaus-specific rating
     - The Coffeehaus rating is calculated from user post ratings on Cofeehaus (1-5 stars) and updates in real-time as new ratings come in. This rating will provide how the coffee is to the user (whether they recommend it or not)
-    - The Yelp rating comes from Yelp themselves as whenever we visit a coffee shop page on Yelp, we are given yelp's users ratings. This rating will provide the overall experience of the coffee shop
+    - The Google Places rating comes from Google Places themselves as whenever we visit a coffee shop page on Google Places, we are given Google Places' users ratings. This rating will provide the overall experience of the coffee shop
     - Users can see a breakdown of ratings and view the posts that contributed to the overall Coffeehaus score
 
 ## Priority 4: Advanced Features & Optimizations
@@ -99,7 +99,7 @@ Google Cloud Platform for infrastructure
 
 2. Enhanced shop profiles
     - Additional features:
-        * Photo gallery combining Yelp photos and user-submitted content
+        * Photo gallery combining Google Places photos and user-submitted content
         * Quick statistics (total posts, average rating, popular drinks)
         * Option to save/bookmark the shop for later visits
 
@@ -144,7 +144,7 @@ This phase implements the essential features that make the application usable.
 ### 1. Coffee Shop Integration
 The coffee shop system forms the foundation of our content:
 
-- Set up Yelp API integration
+- Set up Google Places API integration
 - Create shop data synchronization system
 - Implement basic shop storage
 - Build initial shop profile pages
@@ -194,7 +194,7 @@ Location features enable local discovery:
 ### 3. Rating System
 The rating system helps users make informed decisions:
 
-- Implement dual rating display (Yelp + Coffeehaus)
+- Implement dual rating display (Google Places + Coffeehaus)
 - Create rating aggregation system
 - Build rating breakdown views
 - Add rating filtering options
@@ -307,15 +307,15 @@ CREATE TABLE users (
 ```
 
 ### Shop
-The Shop model stores information about coffee shops, integrating data from Yelp with our platform's specific data.
+The Shop model stores information about coffee shops, integrating data from Google Places with our platform's specific data.
 ```sql
 CREATE TABLE shops (
     id UUID PRIMARY KEY,
-    yelp_id TEXT UNIQUE NOT NULL,
+    google_place_id TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     location POINT NOT NULL,
     address TEXT NOT NULL,
-    yelp_rating DECIMAL(2,1),
+    google_rating DECIMAL(2,1),
     coffeehaus_rating DECIMAL(2,1),
     price_level TEXT,
     hours JSONB,

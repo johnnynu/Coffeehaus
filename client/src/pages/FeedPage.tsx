@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { mockFeedPosts } from "@/utils/mockData";
 import PostCard from "@/components/landing/PostCard";
 import useUserProfileStore from "@/store/userProfileStore";
@@ -11,14 +11,19 @@ const FeedPage: React.FC = () => {
   const { session } = useAuth();
   const { profile, fetchProfile } = useUserProfileStore();
   const [activeTab, setActiveTab] = useState<"following" | "discover">(
-    "following"
+    "discover"
   );
 
-  useEffect(() => {
+  const memoizedFetchProfile = useCallback(() => {
     if (session?.access_token) {
+      console.log("Triggering fetch...", new Date().toISOString());
       fetchProfile(session.access_token);
     }
   }, [session?.access_token, fetchProfile]);
+
+  useEffect(() => {
+    memoizedFetchProfile();
+  }, [memoizedFetchProfile]);
 
   return (
     <div className="min-h-screen bg-[#F9F6F4]">
@@ -58,14 +63,24 @@ const FeedPage: React.FC = () => {
                 Welcome to your personalized coffee feed! Share your favorite
                 coffee experiences and discover new spots.
               </p>
-              <Button
-                className="w-full bg-[#4A3726] text-[#F9F6F4] hover:bg-[#634832]"
-                onClick={() => {}}
-              >
-                <PlusCircle className="w-4 h-4 mr-2" />
-                New Post
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button
+                  className="bg-[#4A3726] text-[#F9F6F4] hover:bg-[#634832] py-2"
+                  onClick={() => {}}
+                >
+                  <PlusCircle className="w-4 h-4 mr-2 shrink-0" />
+                  New Post
+                </Button>
+                <Button
+                  className="bg-[#4A3726] text-[#F9F6F4] hover:bg-[#634832] py-2"
+                  onClick={() => {}}
+                >
+                  <MapPin className="w-4 h-4 mr-2 shrink-0" />
+                  Discover Nearby
+                </Button>
+              </div>
             </div>
+
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="font-semibold text-[#4A3726] mb-4">
                 Your Coffee Journey
@@ -93,16 +108,6 @@ const FeedPage: React.FC = () => {
               <div className="flex border-b border-[#E5E7EB]">
                 <button
                   className={`flex-1 py-2 text-center font-medium ${
-                    activeTab === "following"
-                      ? "text-[#4A3726] border-b-2 border-[#4A3726]"
-                      : "text-[#6B7280]"
-                  }`}
-                  onClick={() => setActiveTab("following")}
-                >
-                  Following
-                </button>
-                <button
-                  className={`flex-1 py-2 text-center font-medium ${
                     activeTab === "discover"
                       ? "text-[#4A3726] border-b-2 border-[#4A3726]"
                       : "text-[#6B7280]"
@@ -110,6 +115,16 @@ const FeedPage: React.FC = () => {
                   onClick={() => setActiveTab("discover")}
                 >
                   Discover
+                </button>
+                <button
+                  className={`flex-1 py-2 text-center font-medium ${
+                    activeTab === "following"
+                      ? "text-[#4A3726] border-b-2 border-[#4A3726]"
+                      : "text-[#6B7280]"
+                  }`}
+                  onClick={() => setActiveTab("following")}
+                >
+                  Following
                 </button>
               </div>
             </div>

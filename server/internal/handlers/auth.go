@@ -34,7 +34,7 @@ func (h *AuthHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-		query := `username, display_name, profile_photo_id, photos!profile_photo_id(versions)`
+		query := `username, display_name, bio, profile_photo_id, photos!profile_photo_id(versions)`
 	res, status, err := h.db.From("users").Select(query, "", false).Eq("id", userResp.User.ID.String()).Single().Execute()
 
 	log.Printf("Query result - Status: %d, Error: %v, Response: %s", status, err, string(res))
