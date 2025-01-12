@@ -149,6 +149,7 @@ The coffee shop system forms the foundation of our content:
 - Implement basic shop storage
 - Build initial shop profile pages
 - Add basic shop search functionality
+- Set up Redis Cloud for caching search results
 
 ### 2. Basic Post System
 The post system enables users to share their experiences:
@@ -310,18 +311,32 @@ CREATE TABLE users (
 The Shop model stores information about coffee shops, integrating data from Google Places with our platform's specific data.
 ```sql
 CREATE TABLE shops (
-    id UUID PRIMARY KEY,
-    google_place_id TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    location POINT NOT NULL,
-    address TEXT NOT NULL,
-    google_rating DECIMAL(2,1),
-    coffeehaus_rating DECIMAL(2,1),
-    price_level TEXT,
-    hours JSONB,
-    last_sync TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+    google_place_id text NOT NULL UNIQUE,
+    name text NOT NULL,
+    formatted_address text,
+    vicinity text,
+    location point,
+    google_rating float4,
+    ratings_total integer,
+    price_level integer,
+    types text[],
+    photo_refs text[],
+    website text,
+    formatted_phone text,
+    business_status text,
+    coffeehaus_rating float4,
+    hours jsonb,
+    last_sync timestamptz,
+    created_at timestamptz DEFAULT now(),
+    verified boolean DEFAULT false
 );
+
+-- Indexes for better query performance
+CREATE INDEX idx_shops_google_place_id ON shops(google_place_id);
+CREATE INDEX idx_shops_location ON shops USING GIST(location);
+CREATE INDEX idx_shops_google_rating ON shops(google_rating);
+CREATE INDEX idx_shops_business_status ON shops(business_status);
 ```
 
 ### Post

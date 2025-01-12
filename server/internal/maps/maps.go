@@ -39,24 +39,6 @@ func (m *MapsClient) TestConnection(ctx context.Context) error {
 	return nil
 }
 
-// CoffeeShopDetails combines data from Places Search and Place Details
-type CoffeeShopDetails struct {
-	PlaceID          string
-	Name             string
-	FormattedAddress string
-	Vicinity         string
-	Location         maps.LatLng
-	Rating           float32
-	UserRatingsTotal int
-	PriceLevel       int
-	Types            []string
-	Photos           []maps.Photo
-	OpeningHours     *maps.OpeningHours
-	Website          string
-	FormattedPhone   string
-	BusinessStatus   string
-}
-
 // search for coffee shops near the given coordinates
 func (m *MapsClient) SearchCoffeeShops(ctx context.Context, lat, lng float64, radiusMeters uint) ([]*CoffeeShopDetails, error) {
 	location := &maps.LatLng{
