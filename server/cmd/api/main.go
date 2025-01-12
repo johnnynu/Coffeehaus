@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/johnnynu/Coffeehaus/internal/claude"
 	"github.com/johnnynu/Coffeehaus/internal/config"
 	"github.com/johnnynu/Coffeehaus/internal/database"
 	handlers "github.com/johnnynu/Coffeehaus/internal/handlers"
+	"github.com/johnnynu/Coffeehaus/internal/maps"
 	jwtauth "github.com/johnnynu/Coffeehaus/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
@@ -41,6 +43,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize auth middleware: %v", err)
 	}
+
+	// Initialize maps client
+	mapsClient, err := maps.NewMapsClient()
+	if err != nil {
+		log.Fatalf("Failed to initialize maps client: %v", err)
+	}
+
+	// Initialize claude service
+	claudeService := claude.NewService(os.Getenv("CLAUDE_API_KEY"))
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(db)

@@ -133,42 +133,17 @@ func (s *SyncManager) checkForUpdate(ctx context.Context, input SyncInput) (bool
 		return false, nil
 	}
 
-	// Use the first shop (should be the only one since we're querying by place_id)
-	existingShop := existingShops[0]
+	shop := existingShops[0]
 
-	// check if any fields changed, handling nil values
-	needsUpdate := false
-
-	// Compare each field, only if the input field is not empty
-	if input.Name != "" && existingShop.Name != input.Name {
-		needsUpdate = true
-	}
-	if input.FormattedAddress != "" && existingShop.FormattedAddress != input.FormattedAddress {
-		needsUpdate = true
-	}
-	if input.Vicinity != "" && existingShop.Vicinity != input.Vicinity {
-		needsUpdate = true
-	}
-	if input.Rating > 0 && existingShop.GoogleRating != input.Rating {
-		needsUpdate = true
-	}
-	if input.UserRatingsTotal > 0 && existingShop.RatingsTotal != input.UserRatingsTotal {
-		needsUpdate = true
-	}
-	if input.PriceLevel > 0 && existingShop.PriceLevel != input.PriceLevel {
-		needsUpdate = true
-	}
-	if input.Website != "" && existingShop.Website != input.Website {
-		needsUpdate = true
-	}
-	if input.FormattedPhone != "" && existingShop.FormattedPhone != input.FormattedPhone {
-		needsUpdate = true
-	}
-	if input.BusinessStatus != "" && existingShop.BusinessStatus != input.BusinessStatus {
-		needsUpdate = true
-	}
-
-	return needsUpdate, nil
+	return (input.Name != "" && shop.Name != input.Name) ||
+		(input.FormattedAddress != "" && shop.FormattedAddress != input.FormattedAddress) ||
+		(input.Vicinity != "" && shop.Vicinity != input.Vicinity) ||
+		(input.Rating > 0 && shop.GoogleRating != input.Rating) ||
+		(input.UserRatingsTotal > 0 && shop.RatingsTotal != input.UserRatingsTotal) ||
+		(input.PriceLevel > 0 && shop.PriceLevel != input.PriceLevel) ||
+		(input.Website != "" && shop.Website != input.Website) ||
+		(input.FormattedPhone != "" && shop.FormattedPhone != input.FormattedPhone) ||
+		(input.BusinessStatus != "" && shop.BusinessStatus != input.BusinessStatus), nil
 }
 
 func (s *SyncManager) updateShop(ctx context.Context, input SyncInput) error {
