@@ -26,7 +26,7 @@ Coffeehaus combines the joy of discovering new coffee shops with a vibrant socia
 
 * Find coffee shops near you with our interactive map
 * View comprehensive shop information including hours, ratings, and photos
-* See both official Yelp ratings and community reviews
+* See both official Google ratings and community reviews
 * Search for shops by name or location
 
 ### Share Your Experience
@@ -72,24 +72,24 @@ We want Coffeehaus to be a welcoming space for all coffee lovers. Please:
 * Tailwind CSS with shadcn/ui components
 * Zustand for state management
 * Google Maps JavaScript API
-* Firebase SDK
+* Supabase SDK
 
 ### Backend
 
 * Go with Chi router
-* Firebase Admin SDK
+* Supabase SDK
 * Google Cloud Platform services
 
 ### Data & Storage
 
-* Firestore (primary database)
-* Cloud Memorystore (Redis) for caching
+* Supabase (primary database)
+* Redis Cloud for caching
 * Google Cloud Storage for images
 * Cloudinary for image processing
 
 ### Authentication
 
-* Firebase Authentication with Email/Password and Google OAuth
+* Supabase Authentication with Email/Password and Google OAuth
 * JWT token management
 
 ## Infrastructure
@@ -97,13 +97,13 @@ We want Coffeehaus to be a welcoming space for all coffee lovers. Please:
 * **Cloud Services**: Deployed on Google Cloud Platform
 * **CDN**: Cloud CDN for content delivery
 * **Image Processing**: Cloudinary
-* **Caching**: Redis via Cloud Memorystore
-* **Database**: Firestore
+* **Caching**: Redis via Redis Cloud
+* **Database**: Supabase
 * **Storage**: Google Cloud Storage
 
 ## External APIs
 
-* **Yelp Fusion API**: Coffee shop data and ratings
+* **Google Places API**: Coffee shop data and ratings
 * **Google Maps**: Location services and shop discovery
 * **Cloudinary**: Image optimization and processing
 
