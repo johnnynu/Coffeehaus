@@ -6,7 +6,7 @@
 
 *A social platform for coffee enthusiasts*
 
-[![Visit](https://img.shields.io/badge/-Visit%20Coffeehaus-brown?style=for-the-badge&logo=coffeescript&logoColor=white)](https://coffeehaus.app)
+[![Visit](https://img.shields.io/badge/-Visit%20Coffeehaus-brown?style=for-the-badge&logo=coffeescript&logoColor=white)](https://coffeehaussocial.com)
 
 ## About
 
