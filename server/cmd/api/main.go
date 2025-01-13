@@ -11,6 +11,9 @@ import (
 	handlers "github.com/johnnynu/Coffeehaus/internal/handlers"
 	"github.com/johnnynu/Coffeehaus/internal/maps"
 	jwtauth "github.com/johnnynu/Coffeehaus/internal/middleware"
+	"github.com/johnnynu/Coffeehaus/internal/search"
+	"github.com/johnnynu/Coffeehaus/internal/shop"
+	"github.com/joho/godotenv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -18,6 +21,11 @@ import (
 )
 
 func main() {
+	// Load the .env file
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Warning: Error loading .env file: %v", err)
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -53,9 +61,16 @@ func main() {
 	// Initialize claude service
 	claudeService := claude.NewService(os.Getenv("CLAUDE_API_KEY"))
 
+	// Initialize shop sync manager
+	shopSyncManager := shop.NewSyncManager(db)
+
+	// Initialize search service
+	searchService := search.NewSearchService(mapsClient, db, claudeService, shopSyncManager)
+
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(db)
 	userHandler := handlers.NewUserHandler(db)
+	searchHandler := handlers.NewSearchHandler(searchService)
 
 	r := chi.NewRouter()
 
@@ -84,6 +99,9 @@ func main() {
 			r.Get("/", authHandler.GetUser)
 			r.Put("/{username}", userHandler.UpdateProfile)
 		})
+
+		// Search routes
+		r.Get("/search", searchHandler.HandleSearch)
 	})
 
 	log.Printf("Server starting on port %s", port)

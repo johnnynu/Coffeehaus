@@ -113,75 +113,116 @@ func (m *MapsClient) SearchSpecificCoffeeShop(ctx context.Context, shopName stri
 		return nil, fmt.Errorf("failed to get autocomplete predictions: %w", err)
 	}
 
-	// If we got predictions, use them to find the correct shop name
-	var correctedShopName string
+	// Use all predictions that match our shop name
+	var results []*CoffeeShopDetails
+	shopNameLower := strings.ToLower(shopName)
+	seenPlaceIDs := make(map[string]bool)
+
+	// First try predictions if we have any
 	if len(predictions.Predictions) > 0 {
-		// Use the first prediction's name as it's likely the most relevant match
-		correctedShopName = predictions.Predictions[0].StructuredFormatting.MainText
-	} else {
-		correctedShopName = shopName
+		for _, prediction := range predictions.Predictions {
+			predictionName := strings.ToLower(prediction.StructuredFormatting.MainText)
+			if strings.Contains(predictionName, shopNameLower) {
+				// Get details for this prediction
+				detailsRequest := &maps.PlaceDetailsRequest{
+					PlaceID: prediction.PlaceID,
+				}
+
+				details, err := m.client.PlaceDetails(ctx, detailsRequest)
+				if err != nil {
+					log.Printf("Warning: failed to get details for place %s: %v", prediction.Description, err)
+					continue
+				}
+
+				// Skip if we've already seen this place
+				if seenPlaceIDs[details.PlaceID] {
+					continue
+				}
+				seenPlaceIDs[details.PlaceID] = true
+
+				result := &CoffeeShopDetails{
+					PlaceID:          details.PlaceID,
+					Name:             details.Name,
+					FormattedAddress: details.FormattedAddress,
+					Vicinity:         details.Vicinity,
+					Location:         details.Geometry.Location,
+					Rating:           details.Rating,
+					UserRatingsTotal: details.UserRatingsTotal,
+					PriceLevel:       details.PriceLevel,
+					Types:            details.Types,
+					Photos:           details.Photos,
+					OpeningHours:     details.OpeningHours,
+					Website:          details.Website,
+					FormattedPhone:   details.InternationalPhoneNumber,
+					BusinessStatus:   details.BusinessStatus,
+				}
+
+				results = append(results, result)
+			}
+		}
 	}
 
-	// Now use text search with the corrected name to find all locations
-	query := fmt.Sprintf("%s in %s", correctedShopName, location)
+	// Then do a text search to find any additional locations
+	query := fmt.Sprintf("%s in %s", shopName, location)
 	request := &maps.TextSearchRequest{
 		Query: query,
 	}
 
 	response, err := m.client.TextSearch(ctx, request)
 	if err != nil {
-		return nil, fmt.Errorf("failed to search for coffee shop: %w", err)
+		if len(results) > 0 {
+			// If we already have results from predictions, don't fail
+			log.Printf("Warning: text search failed: %v", err)
+		} else {
+			return nil, fmt.Errorf("failed to search for coffee shop: %w", err)
+		}
 	}
 
-	if len(response.Results) == 0 {
-		return nil, fmt.Errorf("no coffee shop found with name: %s in %s", shopName, location)
-	}
+	// Process text search results
+	if len(response.Results) > 0 {
+		for _, place := range response.Results {
+			// Skip if we've already seen this place
+			if seenPlaceIDs[place.PlaceID] {
+				continue
+			}
 
-	// Take only first 10 results
-	maxResults := 10
-	if len(response.Results) > maxResults {
-		response.Results = response.Results[:maxResults]
-	}
+			// Check if this place's name contains the shop name we're looking for
+			if !strings.Contains(strings.ToLower(place.Name), shopNameLower) {
+				continue
+			}
 
-	// Filter results to only include places that have the shop name in their name
-	var results []*CoffeeShopDetails
-	shopNameLower := strings.ToLower(correctedShopName)
+			// Get more details using Place Details
+			detailsRequest := &maps.PlaceDetailsRequest{
+				PlaceID: place.PlaceID,
+			}
 
-	for _, place := range response.Results {
-		// Check if this place's name contains the shop name we're looking for
-		if !strings.Contains(strings.ToLower(place.Name), shopNameLower) {
-			continue
+			details, err := m.client.PlaceDetails(ctx, detailsRequest)
+			if err != nil {
+				log.Printf("Warning: failed to get details for place %s: %v", place.Name, err)
+				continue
+			}
+
+			seenPlaceIDs[details.PlaceID] = true
+
+			result := &CoffeeShopDetails{
+				PlaceID:          details.PlaceID,
+				Name:             details.Name,
+				FormattedAddress: details.FormattedAddress,
+				Vicinity:         details.Vicinity,
+				Location:         details.Geometry.Location,
+				Rating:           details.Rating,
+				UserRatingsTotal: details.UserRatingsTotal,
+				PriceLevel:       details.PriceLevel,
+				Types:            details.Types,
+				Photos:           details.Photos,
+				OpeningHours:     details.OpeningHours,
+				Website:          details.Website,
+				FormattedPhone:   details.InternationalPhoneNumber,
+				BusinessStatus:   details.BusinessStatus,
+			}
+
+			results = append(results, result)
 		}
-
-		// Get more details using Place Details
-		detailsRequest := &maps.PlaceDetailsRequest{
-			PlaceID: place.PlaceID,
-		}
-
-		details, err := m.client.PlaceDetails(ctx, detailsRequest)
-		if err != nil {
-			log.Printf("Warning: failed to get details for place %s: %v", place.Name, err)
-			continue
-		}
-
-		result := &CoffeeShopDetails{
-			PlaceID:          details.PlaceID,
-			Name:             details.Name,
-			FormattedAddress: details.FormattedAddress,
-			Vicinity:         details.Vicinity,
-			Location:         details.Geometry.Location,
-			Rating:           details.Rating,
-			UserRatingsTotal: details.UserRatingsTotal,
-			PriceLevel:       details.PriceLevel,
-			Types:            details.Types,
-			Photos:           details.Photos,
-			OpeningHours:     details.OpeningHours,
-			Website:          details.Website,
-			FormattedPhone:   details.InternationalPhoneNumber,
-			BusinessStatus:   details.BusinessStatus,
-		}
-
-		results = append(results, result)
 	}
 
 	if len(results) == 0 {
@@ -250,4 +291,45 @@ func (m *MapsClient) SearchCoffeeShopsByArea(ctx context.Context, query string) 
 	}
 
 	return results, nil
+}
+
+func (m* MapsClient) ReverseGeocode(ctx context.Context, lat, lng float64) (string, error) {
+	location := &maps.LatLng{
+		Lat: lat,
+		Lng: lng,
+	}
+
+	resp, err := m.client.ReverseGeocode(ctx, &maps.GeocodingRequest{
+		LatLng: location,
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("failed to reverse geocode: %w", err)
+	}
+
+	if len(resp) == 0 {
+		return "", fmt.Errorf("no results found for location: %f,%f", lat, lng)
+	}
+
+	// format the location string
+	var locality, adminArea, postalCode string
+	for _, component := range resp[0].AddressComponents {
+		for _, typ := range component.Types {
+			switch typ {
+			case "locality":
+				locality = component.LongName
+			case "administrative_area_level_1":
+				adminArea = component.ShortName
+			case "postal_code":
+				postalCode = component.ShortName
+			}
+		}
+	}
+
+	if locality != "" && adminArea != "" && postalCode != "" {
+		return fmt.Sprintf("%s, %s %s", locality, adminArea, postalCode), nil
+	}
+
+	// fallback to formatted address if components not found
+	return resp[0].FormattedAddress, nil
 }

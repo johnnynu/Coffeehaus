@@ -14,7 +14,6 @@ type SearchOptions struct {
 }
 
 type SearchResult struct {
-    Shops     []maps.CoffeeShopDetails `json:"shops"`
-    PageToken string       `json:"nextPageToken,omitempty"`
+	Shops []*maps.CoffeeShopDetails
 }
 

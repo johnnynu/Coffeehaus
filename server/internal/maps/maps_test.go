@@ -398,3 +398,80 @@ func TestMapsClient_SearchCoffeeShopsByArea(t *testing.T) {
 		})
 	}
 }
+
+func TestMapsClient_ReverseGeocode(t *testing.T) {
+	apiKey := os.Getenv("GOOGLE_MAPS_API_KEY")
+	if apiKey == "" {
+		t.Skip("Skipping test because GOOGLE_MAPS_API_KEY is not set")
+	}
+
+	client, err := NewMapsClient()
+	if err != nil {
+		t.Fatalf("Failed to create maps client: %v", err)
+	}
+
+	ctx := context.Background()
+
+	tests := []struct {
+		name        string
+		lat         float64
+		lng         float64
+		expectError bool
+		contains    string // substring that should be in the result
+	}{
+		{
+			name:        "Westminster, CA location",
+			lat:         33.7514,
+			lng:         -117.9940,
+			expectError: false,
+			contains:    "Westminster",
+		},
+		{
+			name:        "Newport Beach, CA location with postal code",
+			lat:         33.6189,
+			lng:         -117.9289,
+			expectError: false,
+			contains:    "92663", // Newport Beach postal code
+		},
+		{
+			name:        "Invalid coordinates",
+			lat:         1000, // Invalid latitude
+			lng:         1000, // Invalid longitude
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Logf("\n=== Testing %s ===", tt.name)
+			t.Logf("Coordinates: (%.4f, %.4f)", tt.lat, tt.lng)
+			
+			// Add a small delay between tests to avoid rate limiting
+			time.Sleep(time.Second)
+
+			result, err := client.ReverseGeocode(ctx, tt.lat, tt.lng)
+
+			if tt.expectError {
+				if err == nil {
+					t.Error("expected error but got none")
+				} else {
+					t.Logf("Got expected error: %v", err)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			if tt.contains != "" && !strings.Contains(result, tt.contains) {
+				t.Errorf("expected result to contain %q, but got %q", tt.contains, result)
+			}
+
+			t.Logf("Successfully reverse geocoded:")
+			t.Logf("Input coordinates: (%.4f, %.4f)", tt.lat, tt.lng)
+			t.Logf("Formatted address: %s", result)
+		})
+	}
+}
