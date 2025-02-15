@@ -34,7 +34,7 @@ func TestAnalyzeSearchQuery(t *testing.T) {
 	}{
 		{
 			name:         "specific shop search",
-			query:        "File Systems of Coffee",
+			query:        "Stereoscope Coffee",
 			userLocation: "Garden Grove, CA",
 			wantType:     "specific",
 			wantError:    false,
@@ -48,7 +48,7 @@ func TestAnalyzeSearchQuery(t *testing.T) {
 		},
 		{
 			name:         "area search with filter",
-			query:        "matcha lattes in LA",
+			query:        "strawberry matcha lattes in LA",
 			userLocation: "Los Angeles, CA",
 			wantType:     "area",
 			wantError:    false,

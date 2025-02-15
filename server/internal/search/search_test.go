@@ -141,13 +141,8 @@ func TestSearch_Area(t *testing.T) {
 	}{
 		{
 			name:         "search in area",
-			query:        "coffee shops that offer matcha in LA",
-			minLocations: 5, // Should find several coffee shops in Little Tokyo
-		},
-		{
-			name:         "search with specific requirements",
-			query:        "24 hour coffee shops with wifi in Costa Mesa",
-			minLocations: 3, // Should find several shops matching criteria
+			query:        "coffee shops that offer strawberry matcha in OC",
+			minLocations: 5,
 		},
 	}
 

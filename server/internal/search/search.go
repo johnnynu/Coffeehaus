@@ -200,3 +200,58 @@ func (s *SearchService) backgroundSyncShops(shops []*maps.CoffeeShopDetails) {
 		}
 	}()
 }
+
+// convertToSyncInput converts a Google Maps CoffeeShopDetails to a SyncInput
+func convertToSyncInput(placeShop *maps.CoffeeShopDetails) shop.SyncInput {
+	photos := make([]maps.Photo, len(placeShop.Photos))
+	for i, photo := range placeShop.Photos {
+		photos[i] = maps.Photo{
+			PhotoReference: photo.PhotoReference,
+			Height: photo.Height,
+			Width: photo.Width,
+			HTMLAttributions: photo.HTMLAttributions,
+		}
+	}
+
+	// convert opening hours from Google Maps type to internal type
+	var openingHours *maps.OpeningHours
+	if placeShop.OpeningHours != nil {
+		periods := make([]maps.Period, len(placeShop.OpeningHours.Periods))
+		for i, p := range placeShop.OpeningHours.Periods {
+			periods[i] = maps.Period{
+				Open: maps.TimeOfDay{
+					Day: p.Open.Day,
+					Time: p.Open.Time,
+				},
+				Close: maps.TimeOfDay{
+					Day: p.Close.Day,
+					Time: p.Close.Time,
+				},
+			}
+		}
+		openingHours = &maps.OpeningHours{
+			WeekdayText: placeShop.OpeningHours.WeekdayText,
+			Periods: periods,
+		}
+	}
+
+	return shop.SyncInput{
+		PlaceID: placeShop.PlaceID,
+		Name: placeShop.Name,
+		FormattedAddress: placeShop.FormattedAddress,
+		Vicinity: placeShop.Vicinity,
+		Location: maps.LatLng{
+			Lat: placeShop.Location.Lat,
+			Lng: placeShop.Location.Lng,
+		},
+		Rating: placeShop.Rating,
+		UserRatingsTotal: placeShop.UserRatingsTotal,
+		PriceLevel: placeShop.PriceLevel,
+		Types: placeShop.Types,
+		Photos: photos,
+		OpeningHours: openingHours,
+		Website: placeShop.Website,
+		FormattedPhone: placeShop.FormattedPhone,
+		BusinessStatus: placeShop.BusinessStatus,
+	}
+}
