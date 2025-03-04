@@ -99,7 +99,7 @@ func (r *RedisClient) GetCachedShop(ctx context.Context, shopID string) (*shop.S
 }
 
 func (r *RedisClient) SearchSpecific(ctx context.Context, shopName string) ([]*shop.Shop, error) {
-	query := redisearch.NewQuery(fmt.Sprintf(`@name:"%s"`, shopName)).Limit(0, 10)
+	query := redisearch.NewQuery(fmt.Sprintf(`@name:%s*`, shopName)).Limit(0, 10)
 
 	docs, total, err := r.searchClient.Search(query)
 	if err != nil {

@@ -3,6 +3,7 @@ package search
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/johnnynu/Coffeehaus/internal/claude"
 	"github.com/johnnynu/Coffeehaus/internal/database"
@@ -61,7 +62,7 @@ func (s *SearchService) Search(ctx context.Context, opts SearchOptions) (*Search
 }
 
 func (s *SearchService) handleSpecificSearch(ctx context.Context, userIntent *claude.SearchIntent, opts SearchOptions) (*SearchResult, error) {
-	// first try to find shop in db
+	// try to find shop in db
 	dbShop, err := s.db.FindShopsByName(ctx, userIntent.Terms.Shop)
 	if err == nil && len(dbShop) > 0 {
 		return &SearchResult{
@@ -138,65 +139,21 @@ func (s *SearchService) handleProximitySearch(ctx context.Context, opts SearchOp
 
 // backgroundSyncShops starts a goroutine to sync shop data to the database
 func (s *SearchService) backgroundSyncShops(shops []*maps.CoffeeShopDetails) {
+	if len(shops) == 0 {
+		return
+	}
+
 	go func() {
+		inputs := make([]shop.SyncInput, 0, len(shops))
+		
 		for _, placeShop := range shops {
-			// convert photos from Google Maps type to internal type
-			photos := make([]maps.Photo, len(placeShop.Photos))
-			for i, photo := range placeShop.Photos {
-				photos[i] = maps.Photo{
-					PhotoReference: photo.PhotoReference,
-					Height: photo.Height,
-					Width: photo.Width,
-					HTMLAttributions: photo.HTMLAttributions,
-				}
-			}
-
-			// convert opening hours from Google Maps type to internal type
-			var openingHours *maps.OpeningHours
-			if placeShop.OpeningHours != nil {
-				periods := make([]maps.Period, len(placeShop.OpeningHours.Periods))
-				for i, p := range placeShop.OpeningHours.Periods {
-					periods[i] = maps.Period{
-						Open: maps.TimeOfDay{
-							Day: p.Open.Day,
-							Time: p.Open.Time,
-						},
-						Close: maps.TimeOfDay{
-							Day: p.Close.Day,
-							Time: p.Close.Time,
-						},
-					}
-				}
-				openingHours = &maps.OpeningHours{
-					WeekdayText: placeShop.OpeningHours.WeekdayText,
-					Periods: periods,
-				}
-			}
-
-			syncInput := shop.SyncInput{
-				PlaceID: placeShop.PlaceID,
-				Name: placeShop.Name,
-				FormattedAddress: placeShop.FormattedAddress,
-				Vicinity: placeShop.Vicinity,
-				Location: maps.LatLng{
-					Lat: placeShop.Location.Lat,
-					Lng: placeShop.Location.Lng,
-				},
-				Rating: placeShop.Rating,
-				UserRatingsTotal: placeShop.UserRatingsTotal,
-				PriceLevel: placeShop.PriceLevel,
-				Types: placeShop.Types,
-				Photos: photos,
-				OpeningHours: openingHours,
-				Website: placeShop.Website,
-				FormattedPhone: placeShop.FormattedPhone,
-				BusinessStatus: placeShop.BusinessStatus,
-			}
-
-			if err := s.shops.SyncShopData(context.Background(), syncInput); err != nil {
-				// log error but continue with other shops
-				fmt.Printf("failed to sync shop data: %v\n", err)
-			}
+			input := convertToSyncInput(placeShop)
+			inputs = append(inputs, input)
+		}
+		ctx := context.Background()
+		log.Printf("Starting batch sync of %d shops", len(inputs))
+		if err := s.shops.BatchSyncShopData(ctx, inputs); err != nil {
+			fmt.Printf("failed to batch sync shop data: %v\n", err)
 		}
 	}()
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"strings"
 	"time"
 
 	"github.com/johnnynu/Coffeehaus/internal/database"
@@ -44,6 +46,212 @@ func (s *SyncManager) SyncShopData(ctx context.Context, input SyncInput) error {
 
 	return nil
 }
+
+func (s *SyncManager) BatchSyncShopData(ctx context.Context, inputs []SyncInput) error {
+	if len(inputs) == 0 {
+		return nil
+	}
+
+	// extract all place ids to check if a shop exists
+	placeIDs := make([]string, len(inputs))
+	for i, input := range inputs {
+		placeIDs[i] = input.PlaceID
+	}
+
+	// find all existing shops
+	existingShops, err := s.getExistingShops(ctx, placeIDs)
+	if err != nil {
+		return fmt.Errorf("failed to check existing shops: %w", err)
+	}
+	fmt.Printf("Existing shops count: %d\n", len(existingShops))
+
+	// separate shops that need to be created vs updated
+	var toCreate []SyncInput
+	var toUpdate []SyncInput
+
+	// map of placeID -> existing shop
+	existingMap := make(map[string]ExistingShop)
+	for _, shop := range existingShops {
+		existingMap[shop.GooglePlaceID] = shop
+	}
+
+	for _, input := range inputs {
+		existing, exists := existingMap[input.PlaceID]
+		if !exists {
+			toCreate = append(toCreate, input)
+			continue
+		}
+
+		// check if shop needs update
+		if needsUpdate(existing, input) {
+			toUpdate = append(toUpdate, input)
+		}
+	}
+
+	fmt.Printf("Shops to create: %d\n", len(toCreate))
+	fmt.Printf("Shops to update: %d\n", len(toUpdate))
+	// create new shops in batch
+	if len(toCreate) > 0 {
+		if err := s.batchCreateShops(ctx, toCreate); err != nil {
+			return fmt.Errorf("failed to batch create shops: %w", err)
+		}
+	}
+
+	// update existing shops in batch
+	if len(toUpdate) > 0  {
+		if err := s.batchUpdateShops(ctx, toUpdate); err != nil {
+			return fmt.Errorf("failed to batch update shops: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (s *SyncManager) getExistingShops(ctx context.Context, placeIDs []string) ([]ExistingShop, error) {
+	_ = ctx
+
+	// this query uses the "in" filter to find all shops with the given place IDs
+	placeIDsStr := fmt.Sprintf("(%s)", strings.Join(placeIDs, ","))
+
+	query := "id, google_place_id, name, formatted_address, vicinity, google_rating, ratings_total, price_level, website, formatted_phone, business_status"
+
+	res, _, err := s.db.From("shops").Select(query, "", false).Filter("google_place_id", "in", placeIDsStr).Execute()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get existing shops: %w", err)
+	}
+
+	var existingShops []ExistingShop
+	if err := json.Unmarshal(res, &existingShops); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal existing shops: %w", err)
+	}
+
+	return existingShops, nil
+}
+
+// needsUpdate checks if a shop needs to be updated
+func needsUpdate(existing ExistingShop, input SyncInput) bool {
+	return (input.Name != "" && existing.Name != input.Name) ||
+	(input.FormattedAddress != "" && existing.FormattedAddress != input.FormattedAddress) ||
+	(input.Vicinity != "" && existing.Vicinity != input.Vicinity) ||
+	(input.Rating > 0 && existing.GoogleRating != input.Rating) ||
+	(input.UserRatingsTotal > 0 && existing.RatingsTotal != input.UserRatingsTotal) ||
+	(input.PriceLevel > 0 && existing.PriceLevel != input.PriceLevel) ||
+	(input.Website != "" && existing.Website != input.Website) ||
+	(input.FormattedPhone != "" && existing.FormattedPhone != input.FormattedPhone) ||
+	(input.BusinessStatus != "" && existing.BusinessStatus != input.BusinessStatus)
+}
+
+func (s *SyncManager) batchCreateShops(ctx context.Context, inputs []SyncInput) error {
+	_ = ctx
+
+	if len(inputs) == 0 {
+		return nil
+	}
+
+	shopDataBatch := make([]map[string]interface{}, len(inputs))
+
+	for i, input := range inputs {
+		photoRefs := make([]string, len(input.Photos))
+		for j, photo := range input.Photos {
+			photoRefs[j] = photo.PhotoReference
+		}
+
+		// Create point from location
+		point := fmt.Sprintf("(%f,%f)", input.Location.Lat, input.Location.Lng)
+		
+		shopDataBatch[i] = map[string]interface{}{
+			"google_place_id":    input.PlaceID,
+			"name":               input.Name,
+			"formatted_address":  input.FormattedAddress,
+			"vicinity":           input.Vicinity,
+			"location":           point,
+			"google_rating":      input.Rating,
+			"ratings_total":      input.UserRatingsTotal,
+			"price_level":        input.PriceLevel,
+			"types":              input.Types,
+			"photo_refs":         photoRefs,
+			"hours":              input.OpeningHours,
+			"website":            input.Website,
+			"formatted_phone":    input.FormattedPhone,
+			"business_status":    input.BusinessStatus,
+			"last_sync":          time.Now(),
+			"coffeehaus_rating":  nil,
+			"verified":           false,
+		}		
+	}
+
+	// batch insert
+	log.Printf("Batch inserting %d shops", len(shopDataBatch))
+	_, _, err := s.db.From("shops").Insert(shopDataBatch, false, "", "", "").Execute()
+	if err != nil {
+		return fmt.Errorf("failed to batch create shops: %w", err)
+	}
+	return nil
+}
+
+// batchUpdateShops updates multiple shops
+// Note: Postgrest doesnt support true batch updates so multiple requests are required
+func (s *SyncManager) batchUpdateShops(ctx context.Context, inputs []SyncInput) error {
+	_ = ctx
+
+	if len(inputs) == 0 {
+		return nil
+	}
+
+	// Group shops by update pattern to minimize requests
+	log.Printf("Processing batch update for %d shops", len(inputs))
+
+	batchSize := 25
+	for i := 0; i < len(inputs); i += batchSize {
+		end := i + batchSize
+		if end > len(inputs) {
+			end = len(inputs)
+		}
+		batch := inputs[i:end]
+
+		// process for each batch
+		for _, input := range batch {
+			photoRefs := make([]string, len(input.Photos))
+			for j, photo := range input.Photos {
+				photoRefs[j] = photo.PhotoReference
+			}
+
+			point := fmt.Sprintf("(%f,%f)", input.Location.Lat, input.Location.Lng)
+
+			updateData := map[string]interface{}{
+				"name":              input.Name,
+				"formatted_address": input.FormattedAddress,
+				"vicinity":          input.Vicinity,
+				"location":          point,
+				"google_rating":     input.Rating,
+				"ratings_total":     input.UserRatingsTotal,
+				"price_level":       input.PriceLevel,
+				"types":             input.Types,
+				"photo_refs":        photoRefs,
+				"hours":             input.OpeningHours,
+				"website":           input.Website,
+				"formatted_phone":   input.FormattedPhone,
+				"business_status":   input.BusinessStatus,
+				"last_sync":         time.Now(),
+			}
+
+			_, _, err := s.db.From("shops").Update(updateData, "", "").Eq("google_place_id", input.PlaceID).Execute()
+			if err != nil {
+				return fmt.Errorf("failed to update shop %s: %w", input.PlaceID, err)
+			}
+		}
+	}
+	return nil
+}
+
+/*
+
+
+	Old methods kept for backward compatibility
+
+
+*/
 
 func (s *SyncManager) shopExists(ctx context.Context, placeID string) (bool, error) {
 	_ = ctx

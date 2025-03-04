@@ -141,7 +141,7 @@ func TestSearch_Area(t *testing.T) {
 	}{
 		{
 			name:         "search in area",
-			query:        "coffee shops that offer strawberry matcha in OC",
+			query:        "coffee shops that offer strawberry matcha in SF",
 			minLocations: 5,
 		},
 	}
@@ -218,14 +218,14 @@ func TestSearch_Proximity(t *testing.T) {
 		wantErr      bool
 	}{
 		{
-			name:         "search near Westminster",
+			name:         "search near Pasadena",
 			lat:         33.7514,
 			lng:         -117.9940,
 			radius:      3000,
 			minLocations: 5, // Should find several coffee shops within 3km
 		},
 		{
-			name:         "search near Newport Beach",
+			name:         "search near Ktown LA",
 			lat:         33.6189,
 			lng:         -117.9289,
 			radius:      5000,

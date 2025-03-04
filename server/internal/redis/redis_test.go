@@ -164,4 +164,24 @@ func TestSearchSpecific(t *testing.T) {
             }
         }
     })
+
+    t.Run("Searching for a specific shop with typos", func (t *testing.T) {
+        shops, err := testClient.SearchSpecific(ctx, "Ster")
+        assert.NoError(t, err, "failed to search shop")
+        assert.NotNil(t, shops, "search results are nil")
+        assert.Len(t, shops, 3, "expected 3 shops in search results")
+
+        expectedIDs := map[string]bool{
+            "stereoscope-newport": true,
+            "stereoscope-buena-park": true,
+            "stereoscope-blue": true,
+        }
+
+        if len(shops) > 0 {
+            for _, shop := range shops {
+                assert.True(t, expectedIDs[shop.ID], shop.ID, "unexpected shop ID: %s", shop.ID)
+                delete(expectedIDs, shop.ID)
+            }
+        }
+    })
 }

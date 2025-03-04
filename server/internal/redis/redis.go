@@ -33,7 +33,10 @@ func NewRedisClient(addr string, password string, db int) (*RedisClient, error) 
 		return redis.Dial("tcp", addr, redis.DialPassword(password))
 	}}
 
+	// shop index
 	searchClient := redisearch.NewClientFromPool(pool, "shopIdx")
+	
+	// todo: search results index?
 
 	return &RedisClient{client: client, searchClient: searchClient}, nil
 }
